@@ -1,4 +1,6 @@
 import logo from './logo.svg';
+import 'webrtc-adapter';
+import './libs/janus'
 import './App.css';
 
 function App() {
