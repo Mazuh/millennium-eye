@@ -4,23 +4,22 @@ import Janus from './libs/janus';
 export const GlobalContext = createContext();
 
 export default function GlobalProvider({ children }) {
+  const [janus, setJanus] = useState(null);
   const [devices, setDevices] = useState({ audio: null, video: null });
   const [username, setUsername] = useState('');
   const [opponent, setOpponent] = useState('');
   const [callState, setCallState] = useState(STATE_OFF);
-  const [janus, setJanus] = useState(null);
 
   useEffect(() => {
     Janus.init({
       debug: true,
-      callback: () => {
-        setJanus(janus);
-        setCallState(STATE_INITIALIZED);
-      },
+      callback: () => setCallState(STATE_INITIALIZED),
     });
   }, []);
 
   const value = {
+    janus,
+    setJanus,
     devices,
     setDevices,
     username,

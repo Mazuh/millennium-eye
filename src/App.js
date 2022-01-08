@@ -2,9 +2,9 @@ import 'webrtc-adapter';
 import { useContext, useEffect, useState } from 'react';
 import './App.css';
 import Janus from './libs/janus';
-import GlobalProvider, { GlobalContext } from './contexts';
+import GlobalProvider, { GlobalContext, STATE_CONNECTED, STATE_CONNECTING } from './contexts';
 
-function App() {
+export default function App() {
   return (
     <GlobalProvider>
       <div>
@@ -12,8 +12,24 @@ function App() {
           <h1>Millennium Eye</h1>
         </header>
         <JoinView />
+        <footer>
+          <p>
+            <small>
+              <CallStatusIndicator />
+            </small>
+          </p>
+        </footer>
       </div>
     </GlobalProvider>
+  );
+}
+
+function CallStatusIndicator() {
+  const { callState } = useContext(GlobalContext);
+  return (
+    <span>
+      <strong>Status:</strong> {callState}
+    </span>
   );
 }
 
@@ -47,15 +63,31 @@ function JoinView() {
       });
   }, []);
 
-  const { setDevices, setUsername, setOpponent } = useContext(GlobalContext);
+  const { setDevices, setUsername, setOpponent, setCallState, setJanus } =
+    useContext(GlobalContext);
   const handleSubmit = (event) => {
     event.preventDefault();
-    setUsername(event.target.username.value.trim());
-    setOpponent(event.target.opponent.value.trim());
-    setDevices({
+
+    const username = event.target.username.value.trim();
+    setUsername(username);
+
+    const opponent = event.target.opponent.value.trim();
+    setOpponent(opponent);
+
+    const devices = {
       audio: microphones.find((m) => m.deviceId === event.target.microphone.value) || null,
       camera: cameras.find((c) => c.deviceId === event.target.camera.value) || null,
+    };
+    setDevices(devices);
+
+    setCallState(STATE_CONNECTING);
+    const janusInstance = new Janus({
+      server: 'http://localhost:8088/janus',
+      success: () => {
+        setCallState(STATE_CONNECTED);
+      },
     });
+    setJanus(janusInstance);
   };
 
   if (error) {
@@ -118,5 +150,3 @@ function JoinView() {
     </main>
   );
 }
-
-export default App;
