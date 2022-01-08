@@ -1,5 +1,7 @@
 "use strict";
 
+import adapter from 'webrtc-adapter';
+
 /*
 	The MIT License (MIT)
 
@@ -3647,3 +3649,5 @@ function Janus(gatewayCallbacks) {
 		return (trickle === false) ? false : true;
 	}
 }
+
+export default Janus;

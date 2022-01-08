@@ -1,7 +1,7 @@
 import 'webrtc-adapter';
-import './libs/janus';
-import './App.css';
 import { useContext, useEffect, useState } from 'react';
+import './App.css';
+import Janus from './libs/janus';
 import GlobalProvider, { GlobalContext } from './contexts';
 
 function App() {

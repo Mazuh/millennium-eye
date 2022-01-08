@@ -1,4 +1,5 @@
-import { createContext, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
+import Janus from './libs/janus';
 
 export const GlobalContext = createContext();
 
@@ -7,6 +8,17 @@ export default function GlobalProvider({ children }) {
   const [username, setUsername] = useState('');
   const [opponent, setOpponent] = useState('');
   const [callState, setCallState] = useState(STATE_OFF);
+  const [janus, setJanus] = useState(null);
+
+  useEffect(() => {
+    Janus.init({
+      debug: true,
+      callback: () => {
+        setJanus(janus);
+        setCallState(STATE_INITIALIZED);
+      },
+    });
+  }, []);
 
   const value = {
     devices,
@@ -23,6 +35,7 @@ export default function GlobalProvider({ children }) {
 }
 
 export const STATE_OFF = 'OFF';
+export const STATE_INITIALIZED = 'INITIALIZED';
 export const STATE_CONNECTING = 'CONNECTING';
 export const STATE_CONNECTED = 'CONNECTED';
 export const STATE_CONNECTION_FAILED = 'CONNECTION_FAILED';
