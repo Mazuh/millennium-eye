@@ -2,7 +2,12 @@ import 'webrtc-adapter';
 import { useContext, useEffect, useState } from 'react';
 import './App.css';
 import Janus from './libs/janus';
-import GlobalProvider, { GlobalContext, STATE_CONNECTED, STATE_CONNECTING } from './contexts';
+import GlobalProvider, {
+  GlobalContext,
+  STATE_CONNECTED,
+  STATE_CONNECTING,
+  STATE_CONNECTION_FAILED,
+} from './global-state';
 
 export default function App() {
   return (
@@ -85,6 +90,9 @@ function JoinView() {
       server: 'http://localhost:8088/janus',
       success: () => {
         setCallState(STATE_CONNECTED);
+      },
+      error: () => {
+        setCallState(STATE_CONNECTION_FAILED);
       },
     });
     setJanus(janusInstance);
