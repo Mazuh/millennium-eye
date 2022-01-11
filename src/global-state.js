@@ -1,3 +1,4 @@
+import get from 'lodash.get';
 import { createContext, useEffect, useState } from 'react';
 import Janus from './libs/janus';
 
@@ -10,6 +11,21 @@ export default function GlobalProvider({ children }) {
   const [opponent, setOpponent] = useState('');
   const [callState, setCallState] = useState(STATE_OFF);
   const [videoCallHandler, setVideoCallHandler] = useState(null);
+
+  const registerUsername = (username) => {
+    setCallState(STATE_REGISTERING);
+    videoCallHandler.send({ message: { request: 'register', username } });
+  };
+
+  const handleJanusMessage = (message, jsep) => {
+    const event = get(message, 'result.event');
+
+    if (event === 'registered') {
+      setCallState(STATE_REGISTERED);
+    } else {
+      console.warn('NOT IMPLEMENTED: onmessage', message, jsep);
+    }
+  };
 
   useEffect(() => {
     Janus.init({
@@ -36,9 +52,7 @@ export default function GlobalProvider({ children }) {
               webrtcState: (isOn) => {
                 console.warn('NOT IMPLEMENTED: webrtcState', isOn);
               },
-              onmessage: (message, jsep) => {
-                console.warn('NOT IMPLEMENTED: onmessage', message, jsep);
-              },
+              onmessage: handleJanusMessage,
               onremotestream: (remote) => {
                 console.warn('NOT IMPLEMENTED: onremotestream', remote);
               },
@@ -70,6 +84,7 @@ export default function GlobalProvider({ children }) {
     setOpponent,
     callState,
     setCallState,
+    registerUsername,
   };
 
   return <GlobalContext.Provider value={value}>{children}</GlobalContext.Provider>;

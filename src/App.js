@@ -1,7 +1,7 @@
 import 'webrtc-adapter';
 import { useContext, useEffect, useState } from 'react';
 import './App.css';
-import GlobalProvider, { GlobalContext } from './global-state';
+import GlobalProvider, { GlobalContext, STATE_CONNECTED, STATE_REGISTERED } from './global-state';
 
 export default function App() {
   return (
@@ -62,22 +62,31 @@ function JoinView() {
       });
   }, []);
 
-  const { setDevices, setUsername, setOpponent } = useContext(GlobalContext);
+  const { callState, setDevices, setUsername, setOpponent, registerUsername } =
+    useContext(GlobalContext);
 
-  const handleSubmit = (event) => {
+  const handleRegisterSubmit = (event) => {
     event.preventDefault();
 
     const username = event.target.username.value.trim();
     setUsername(username);
-
-    const opponent = event.target.opponent.value.trim();
-    setOpponent(opponent);
 
     const devices = {
       audio: microphones.find((m) => m.deviceId === event.target.microphone.value) || null,
       camera: cameras.find((c) => c.deviceId === event.target.camera.value) || null,
     };
     setDevices(devices);
+
+    registerUsername(username);
+  };
+
+  const handleCallSubmit = (event) => {
+    event.preventDefault();
+
+    const opponent = event.target.opponent.value.trim();
+    setOpponent(opponent);
+
+    console.warn('Not implemented yet.');
   };
 
   if (error) {
@@ -102,41 +111,48 @@ function JoinView() {
 
   return (
     <main>
-      <form onSubmit={handleSubmit}>
-        <label>
-          My username:
-          <input name="username" autoComplete="off" defaultValue="Marcell" required />
-        </label>
-        <br />
-        <label>
-          {"Another player's username:"}
-          <input name="opponent" autoComplete="off" defaultValue="Rodrigo" required />
-        </label>
-        <br />
-        <label>
-          Microphone:
-          <select name="microphone" required>
-            {microphones.map((mic) => (
-              <option key={mic.deviceId} value={mic.deviceId}>
-                {mic.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <br />
-        <label>
-          Camera:
-          <select name="camera" required>
-            {cameras.map((cam) => (
-              <option key={cam.deviceId} value={cam.deviceId}>
-                {cam.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <br />
-        <button>Duel!</button>
-      </form>
+      {callState === STATE_CONNECTED && (
+        <form onSubmit={handleRegisterSubmit}>
+          <label>
+            My username:
+            <input name="username" autoComplete="off" defaultValue="Marcell" required />
+          </label>
+          <br />
+          <label>
+            Microphone:
+            <select name="microphone" required>
+              {microphones.map((mic) => (
+                <option key={mic.deviceId} value={mic.deviceId}>
+                  {mic.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <br />
+          <label>
+            Camera:
+            <select name="camera" required>
+              {cameras.map((cam) => (
+                <option key={cam.deviceId} value={cam.deviceId}>
+                  {cam.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <br />
+          <button>Register</button>
+        </form>
+      )}
+      {callState === STATE_REGISTERED && (
+        <form onSubmit={handleCallSubmit}>
+          <label>
+            {"Another player's username:"}
+            <input name="opponent" autoComplete="off" defaultValue="Rodrigo" required />
+          </label>
+          <br />
+          <button>Duel!</button>
+        </form>
+      )}
     </main>
   );
 }
