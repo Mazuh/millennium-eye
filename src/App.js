@@ -115,12 +115,12 @@ function JoinView() {
       <form onSubmit={handleSubmit}>
         <label>
           My username:
-          <input name="username" autoComplete="off" required />
+          <input name="username" autoComplete="off" defaultValue="Marcell" required />
         </label>
         <br />
         <label>
           {"Another player's username:"}
-          <input name="opponent" autoComplete="off" required />
+          <input name="opponent" autoComplete="off" defaultValue="Rodrigo" required />
         </label>
         <br />
         <label>
