@@ -119,7 +119,7 @@ function JoinView() {
         </label>
         <br />
         <label>
-          Another player's username:
+          {"Another player's username:"}
           <input name="opponent" autoComplete="off" required />
         </label>
         <br />
