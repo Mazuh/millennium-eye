@@ -1,7 +1,13 @@
 import 'webrtc-adapter';
 import { useContext, useEffect, useState } from 'react';
 import './App.css';
-import GlobalProvider, { GlobalContext, STATE_CONNECTED, STATE_REGISTERED } from './global-state';
+import GlobalProvider, {
+  GlobalContext,
+  STATE_CALL_FAILED,
+  STATE_CONNECTED,
+  STATE_REGISTERED,
+  STATE_REGISTER_FAILED,
+} from './global-state';
 
 export default function App() {
   return (
@@ -62,7 +68,7 @@ function JoinView() {
       });
   }, []);
 
-  const { callState, setDevices, setUsername, setOpponent, registerUsername } =
+  const { callState, setDevices, setUsername, setOpponent, registerUsername, tryCall } =
     useContext(GlobalContext);
 
   const handleRegisterSubmit = (event) => {
@@ -86,7 +92,7 @@ function JoinView() {
     const opponent = event.target.opponent.value.trim();
     setOpponent(opponent);
 
-    console.warn('Not implemented yet.');
+    tryCall(opponent);
   };
 
   if (error) {
@@ -111,7 +117,7 @@ function JoinView() {
 
   return (
     <main>
-      {callState === STATE_CONNECTED && (
+      {(callState === STATE_CONNECTED || callState === STATE_REGISTER_FAILED) && (
         <form onSubmit={handleRegisterSubmit}>
           <label>
             My username:
@@ -143,7 +149,7 @@ function JoinView() {
           <button>Register</button>
         </form>
       )}
-      {callState === STATE_REGISTERED && (
+      {(callState === STATE_REGISTERED || callState === STATE_CALL_FAILED) && (
         <form onSubmit={handleCallSubmit}>
           <label>
             {"Another player's username:"}
