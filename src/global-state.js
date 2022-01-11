@@ -1,5 +1,5 @@
 import get from 'lodash.get';
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useEffect, useRef, useState } from 'react';
 import Janus from './libs/janus';
 import {
   JANUS_VIDEOCALL_ERROR_NO_SUCH_USERNAME,
@@ -14,18 +14,25 @@ export default function GlobalProvider({ children }) {
   const [username, setUsername] = useState('');
   const [opponent, setOpponent] = useState('');
   const [callState, setCallState] = useState(STATE_OFF);
-  const [videoCallHandler, setVideoCallHandler] = useState(null);
+  const videoCallHandlerRef = useRef(null);
+  const setVideoCallHandler = (handler) => (videoCallHandlerRef.current = handler);
+  const [sessionFileDescriptor, setSessionFileDescriptor] = useState(null);
 
   const registerUsername = (username) => {
     setCallState(STATE_REGISTERING);
-    videoCallHandler.send({ message: { request: 'register', username } });
+    videoCallHandlerRef.current.send({ message: { request: 'register', username } });
   };
 
   const tryCall = (opponent) => {
-    videoCallHandler.createOffer({
+    setCallState(STATE_CALLING);
+
+    videoCallHandlerRef.current.createOffer({
       media: {},
-      success: (jsep) => {
-        videoCallHandler.send({ message: { request: 'call', username: opponent }, jsep: jsep });
+      success: (offerDescriptor) => {
+        videoCallHandlerRef.current.send({
+          message: { request: 'call', username: opponent },
+          jsep: offerDescriptor,
+        });
       },
       error: (error) => {
         console.error('Create offer error', error);
@@ -34,7 +41,35 @@ export default function GlobalProvider({ children }) {
     });
   };
 
-  const handleJanusMessage = (message, jsep) => {
+  const acceptIncomingCall = () => {
+    setCallState(STATE_ANSWERING);
+
+    videoCallHandlerRef.current.createAnswer({
+      jsep: sessionFileDescriptor,
+      media: {},
+      success: (answerDescriptor) => {
+        videoCallHandlerRef.current.send({
+          message: { request: 'accept' },
+          jsep: answerDescriptor,
+        });
+      },
+      error: (error) => {
+        console.error('Create answer error', error);
+        setCallState(STATE_CALL_FAILED);
+      },
+    });
+  };
+
+  const hangup = () => {
+    videoCallHandlerRef.current.send({ message: { request: 'hangup' } });
+    videoCallHandlerRef.current.hangup();
+  };
+
+  const handleJanusMessage = (message, incomingSessionFileDescriptor) => {
+    if (incomingSessionFileDescriptor) {
+      setSessionFileDescriptor(incomingSessionFileDescriptor);
+    }
+
     const event = get(message, 'result.event');
     const errorCode = get(message, 'error_code');
 
@@ -42,14 +77,14 @@ export default function GlobalProvider({ children }) {
       setCallState(STATE_REGISTERED);
     } else if (errorCode === JANUS_VIDEOCALL_ERROR_NO_SUCH_USERNAME) {
       setCallState(STATE_CALL_FAILED);
-    } else if (event === 'calling') {
-      setCallState(STATE_CALLING);
     } else if (event === 'incomingcall') {
       setCallState(STATE_RINGING);
     } else if (errorCode === JANUS_VIDEOCALL_ERROR_USERNAME_TAKEN) {
       setCallState(STATE_REGISTER_FAILED);
+    } else if (event === 'accepted') {
+      videoCallHandlerRef.current.handleRemoteJsep({ jsep: incomingSessionFileDescriptor });
     } else {
-      console.warn('NOT IMPLEMENTED: onmessage', message, jsep);
+      console.warn('NOT IMPLEMENTED: onmessage', message, incomingSessionFileDescriptor);
     }
   };
 
@@ -112,6 +147,8 @@ export default function GlobalProvider({ children }) {
     setCallState,
     registerUsername,
     tryCall,
+    acceptIncomingCall,
+    hangup,
   };
 
   return <GlobalContext.Provider value={value}>{children}</GlobalContext.Provider>;
@@ -128,6 +165,7 @@ export const STATE_REGISTERED = 'REGISTERED';
 export const STATE_REGISTER_FAILED = 'REGISTER_FAILED';
 export const STATE_CALLING = 'CALLING';
 export const STATE_RINGING = 'RINGING';
+export const STATE_ANSWERING = 'ANSWERING';
 export const STATE_IN_CALL = 'IN_CALL';
 export const STATE_CALL_FAILED = 'CALL_FAILED';
 export const STATE_CALL_HUNGUP = 'CALL_HUNGUP';

@@ -3,10 +3,13 @@ import { useContext, useEffect, useState } from 'react';
 import './App.css';
 import GlobalProvider, {
   GlobalContext,
+  STATE_CALLING,
   STATE_CALL_FAILED,
   STATE_CONNECTED,
+  STATE_IN_CALL,
   STATE_REGISTERED,
   STATE_REGISTER_FAILED,
+  STATE_RINGING,
 } from './global-state';
 
 export default function App() {
@@ -68,8 +71,16 @@ function JoinView() {
       });
   }, []);
 
-  const { callState, setDevices, setUsername, setOpponent, registerUsername, tryCall } =
-    useContext(GlobalContext);
+  const {
+    callState,
+    setDevices,
+    setUsername,
+    setOpponent,
+    registerUsername,
+    tryCall,
+    acceptIncomingCall,
+    hangup,
+  } = useContext(GlobalContext);
 
   const handleRegisterSubmit = (event) => {
     event.preventDefault();
@@ -158,6 +169,18 @@ function JoinView() {
           <br />
           <button>Duel!</button>
         </form>
+      )}
+      {callState === STATE_RINGING && (
+        <button type="button" onClick={acceptIncomingCall}>
+          Accept call
+        </button>
+      )}
+      {(callState === STATE_RINGING ||
+        callState === STATE_CALLING ||
+        callState === STATE_IN_CALL) && (
+        <button type="button" onClick={hangup}>
+          Hangup
+        </button>
       )}
     </main>
   );
