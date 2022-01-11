@@ -9,11 +9,53 @@ export default function GlobalProvider({ children }) {
   const [username, setUsername] = useState('');
   const [opponent, setOpponent] = useState('');
   const [callState, setCallState] = useState(STATE_OFF);
+  const [videoCallHandler, setVideoCallHandler] = useState(null);
 
   useEffect(() => {
     Janus.init({
       debug: true,
-      callback: () => setCallState(STATE_INITIALIZED),
+      callback: () => {
+        setCallState(STATE_CONNECTING);
+
+        const janusInstance = new Janus({
+          server: 'http://localhost:8088/janus',
+          success: () => {
+            janusInstance.attach({
+              plugin: 'janus.plugin.videocall',
+              opaqueId: opaqueId,
+              success: (videoCallHandler) => {
+                setVideoCallHandler(videoCallHandler);
+                setCallState(STATE_CONNECTED);
+              },
+              error: () => {
+                setCallState(STATE_CONNECTION_FAILED);
+              },
+              consentDialog: () => {
+                console.warn('NOT IMPLEMENTED: consentDialog');
+              },
+              webrtcState: (isOn) => {
+                console.warn('NOT IMPLEMENTED: webrtcState', isOn);
+              },
+              onmessage: (message, jsep) => {
+                console.warn('NOT IMPLEMENTED: onmessage', message, jsep);
+              },
+              onremotestream: (remote) => {
+                console.warn('NOT IMPLEMENTED: onremotestream', remote);
+              },
+              oncleanup: () => {
+                console.warn('NOT IMPLEMENTED: oncleanup');
+              },
+            });
+          },
+          error: () => {
+            setCallState(STATE_CONNECTION_FAILED);
+          },
+          destroyed: () => {
+            setCallState(STATE_DISCONNECTED);
+          },
+        });
+        setJanus(janusInstance);
+      },
     });
   }, []);
 
@@ -33,8 +75,9 @@ export default function GlobalProvider({ children }) {
   return <GlobalContext.Provider value={value}>{children}</GlobalContext.Provider>;
 }
 
+const opaqueId = `videocalltest-${Janus.randomString(12)}`;
+
 export const STATE_OFF = 'OFF';
-export const STATE_INITIALIZED = 'INITIALIZED';
 export const STATE_CONNECTING = 'CONNECTING';
 export const STATE_CONNECTED = 'CONNECTED';
 export const STATE_CONNECTION_FAILED = 'CONNECTION_FAILED';
@@ -45,3 +88,4 @@ export const STATE_CALLING = 'CALLING';
 export const STATE_IN_CALL = 'IN_CALL';
 export const STATE_CALL_FAILED = 'CALL_FAILED';
 export const STATE_CALL_HUNGUP = 'CALL_HUNGUP';
+export const STATE_DISCONNECTED = 'DISCONNECTED';

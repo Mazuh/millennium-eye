@@ -1,13 +1,7 @@
 import 'webrtc-adapter';
 import { useContext, useEffect, useState } from 'react';
 import './App.css';
-import Janus from './libs/janus';
-import GlobalProvider, {
-  GlobalContext,
-  STATE_CONNECTED,
-  STATE_CONNECTING,
-  STATE_CONNECTION_FAILED,
-} from './global-state';
+import GlobalProvider, { GlobalContext } from './global-state';
 
 export default function App() {
   return (
@@ -68,8 +62,8 @@ function JoinView() {
       });
   }, []);
 
-  const { setDevices, setUsername, setOpponent, setCallState, setJanus } =
-    useContext(GlobalContext);
+  const { setDevices, setUsername, setOpponent } = useContext(GlobalContext);
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -84,18 +78,6 @@ function JoinView() {
       camera: cameras.find((c) => c.deviceId === event.target.camera.value) || null,
     };
     setDevices(devices);
-
-    setCallState(STATE_CONNECTING);
-    const janusInstance = new Janus({
-      server: 'http://localhost:8088/janus',
-      success: () => {
-        setCallState(STATE_CONNECTED);
-      },
-      error: () => {
-        setCallState(STATE_CONNECTION_FAILED);
-      },
-    });
-    setJanus(janusInstance);
   };
 
   if (error) {
