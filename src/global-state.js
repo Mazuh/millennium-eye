@@ -16,7 +16,8 @@ export default function GlobalProvider({ children }) {
   const [callState, setCallState] = useState(STATE_OFF);
   const videoCallHandlerRef = useRef(null);
   const setVideoCallHandler = (handler) => (videoCallHandlerRef.current = handler);
-  const [sessionFileDescriptor, setSessionFileDescriptor] = useState(null);
+  const sessionDescriptorRef = useRef(null);
+  const setSessionDescriptor = (s) => (sessionDescriptorRef.current = s);
 
   const registerUsername = (username) => {
     setCallState(STATE_REGISTERING);
@@ -45,7 +46,7 @@ export default function GlobalProvider({ children }) {
     setCallState(STATE_ANSWERING);
 
     videoCallHandlerRef.current.createAnswer({
-      jsep: sessionFileDescriptor,
+      jsep: sessionDescriptorRef.current,
       media: {},
       success: (answerDescriptor) => {
         videoCallHandlerRef.current.send({
@@ -65,9 +66,9 @@ export default function GlobalProvider({ children }) {
     videoCallHandlerRef.current.hangup();
   };
 
-  const handleJanusMessage = (message, incomingSessionFileDescriptor) => {
-    if (incomingSessionFileDescriptor) {
-      setSessionFileDescriptor(incomingSessionFileDescriptor);
+  const handleJanusMessage = (message, incomingSessionDescriptor) => {
+    if (incomingSessionDescriptor) {
+      setSessionDescriptor(incomingSessionDescriptor);
     }
 
     const event = get(message, 'result.event');
@@ -82,9 +83,9 @@ export default function GlobalProvider({ children }) {
     } else if (errorCode === JANUS_VIDEOCALL_ERROR_USERNAME_TAKEN) {
       setCallState(STATE_REGISTER_FAILED);
     } else if (event === 'accepted') {
-      videoCallHandlerRef.current.handleRemoteJsep({ jsep: incomingSessionFileDescriptor });
+      videoCallHandlerRef.current.handleRemoteJsep({ jsep: sessionDescriptorRef.current });
     } else {
-      console.warn('NOT IMPLEMENTED: onmessage', message, incomingSessionFileDescriptor);
+      console.warn('NOT IMPLEMENTED: onmessage', message, incomingSessionDescriptor);
     }
   };
 
@@ -96,6 +97,11 @@ export default function GlobalProvider({ children }) {
 
         const janusInstance = new Janus({
           server: 'http://localhost:8088/janus',
+          iceServers: [
+            {
+              urls: 'stun:stun.l.google.com:19302',
+            },
+          ],
           success: () => {
             janusInstance.attach({
               plugin: 'janus.plugin.videocall',
@@ -114,8 +120,15 @@ export default function GlobalProvider({ children }) {
                 console.warn('NOT IMPLEMENTED: webrtcState', isOn);
               },
               onmessage: handleJanusMessage,
-              onremotestream: (remote) => {
-                console.warn('NOT IMPLEMENTED: onremotestream', remote);
+              onlocalstream: (stream) => {
+                const video = document.querySelector('#local-video');
+                Janus.attachMediaStream(video, stream);
+                video.muted = 'muted';
+              },
+              onremotestream: (stream) => {
+                const video = document.querySelector('#remote-video');
+                Janus.attachMediaStream(video, stream);
+                video.muted = 'muted';
               },
               oncleanup: () => {
                 setCallState(STATE_REGISTERED);

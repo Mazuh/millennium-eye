@@ -182,6 +182,8 @@ function JoinView() {
           Hangup
         </button>
       )}
+      <video id="local-video" autoPlay playsInline />
+      <video id="remote-video" autoPlay playsInline />
     </main>
   );
 }
