@@ -1,5 +1,5 @@
 import get from 'lodash.get';
-import { createContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useEffect, useRef, useState } from 'react';
 import Janus from './libs/janus';
 import {
   JANUS_VIDEOCALL_ERROR_NO_SUCH_USERNAME,
@@ -66,7 +66,7 @@ export default function GlobalProvider({ children }) {
     videoCallHandlerRef.current.hangup();
   };
 
-  const handleJanusMessage = (message, incomingSessionDescriptor) => {
+  const handleJanusMessage = useCallback((message, incomingSessionDescriptor) => {
     if (incomingSessionDescriptor) {
       setSessionDescriptor(incomingSessionDescriptor);
     }
@@ -87,7 +87,7 @@ export default function GlobalProvider({ children }) {
     } else {
       console.warn('NOT IMPLEMENTED: onmessage', message, incomingSessionDescriptor);
     }
-  };
+  }, []);
 
   useEffect(() => {
     Janus.init({
@@ -149,7 +149,7 @@ export default function GlobalProvider({ children }) {
         setJanus(janusInstance);
       },
     });
-  }, []);
+  }, [handleJanusMessage]);
 
   const value = {
     janus,
