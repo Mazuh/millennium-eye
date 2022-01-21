@@ -117,7 +117,11 @@ export default function GlobalProvider({ children }) {
                 console.warn('NOT IMPLEMENTED: consentDialog');
               },
               webrtcState: (isOn) => {
-                console.warn('NOT IMPLEMENTED: webrtcState', isOn);
+                if (isOn) {
+                  setCallState(STATE_IN_CALL);
+                } else {
+                  setCallState(STATE_CALL_HUNGUP);
+                }
               },
               onmessage: handleJanusMessage,
               onlocalstream: (stream) => {
