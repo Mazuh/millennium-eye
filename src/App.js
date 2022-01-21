@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import './App.css';
 import GlobalProvider, {
   GlobalContext,
+  STATE_ANSWERING,
   STATE_CALLING,
   STATE_CALL_FAILED,
   STATE_CONNECTED,
@@ -33,9 +34,15 @@ export default function App() {
 }
 
 function CallStatusIndicator() {
-  const { callState } = useContext(GlobalContext);
+  const { username, callState } = useContext(GlobalContext);
   return (
     <span>
+      {!!username && (
+        <>
+          <strong>Username:</strong> {username}
+          <br />
+        </>
+      )}
       <strong>Status:</strong> {callState}
     </span>
   );
@@ -126,6 +133,13 @@ function JoinView() {
     );
   }
 
+  const mustShowCallControls = [
+    STATE_CALLING,
+    STATE_RINGING,
+    STATE_ANSWERING,
+    STATE_IN_CALL,
+  ].includes(callState);
+
   return (
     <main>
       {(callState === STATE_CONNECTED || callState === STATE_REGISTER_FAILED) && (
@@ -175,15 +189,16 @@ function JoinView() {
           Accept call
         </button>
       )}
-      {(callState === STATE_RINGING ||
-        callState === STATE_CALLING ||
-        callState === STATE_IN_CALL) && (
-        <button type="button" onClick={hangup}>
-          Hangup
-        </button>
+      {mustShowCallControls && (
+        <>
+          <button type="button" onClick={hangup}>
+            Hangup
+          </button>
+          <br />
+          <video id="local-video" width={400} autoPlay playsInline />
+          <video id="remote-video" width={400} autoPlay playsInline />
+        </>
       )}
-      <video id="local-video" autoPlay playsInline />
-      <video id="remote-video" autoPlay playsInline />
     </main>
   );
 }
