@@ -96,7 +96,7 @@ function JoinView() {
     setUsername(username);
 
     const devices = {
-      audio: microphones.find((m) => m.deviceId === event.target.microphone.value) || null,
+      microphone: microphones.find((m) => m.deviceId === event.target.microphone.value) || null,
       camera: cameras.find((c) => c.deviceId === event.target.camera.value) || null,
     };
     setDevices(devices);

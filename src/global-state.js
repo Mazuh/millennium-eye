@@ -10,7 +10,7 @@ export const GlobalContext = createContext();
 
 export default function GlobalProvider({ children }) {
   const [janus, setJanus] = useState(null);
-  const [devices, setDevices] = useState({ audio: null, video: null });
+  const [devices, setDevices] = useState({ microphone: null, camera: null });
   const [username, setUsername] = useState('');
   const [opponent, setOpponent] = useState('');
   const [callState, setCallState] = useState(STATE_OFF);
@@ -24,11 +24,45 @@ export default function GlobalProvider({ children }) {
     videoCallHandlerRef.current.send({ message: { request: 'register', username } });
   };
 
+  const mediaConstraints = {
+    audio: devices.microphone
+      ? {
+          deviceId: {
+            exact: devices.microphone.deviceId,
+          },
+          advanced: [
+            { googEchoCancellation: { exact: true } },
+            { googExperimentalEchoCancellation: { exact: true } },
+            { autoGainControl: { exact: true } },
+            { noiseSuppression: { exact: true } },
+            { googHighpassFilter: { exact: true } },
+            { googAudioMirroring: { exact: true } },
+          ],
+        }
+      : false,
+    video: devices.camera
+      ? {
+          deviceId: {
+            exact: devices.camera.deviceId,
+          },
+          advanced: [
+            { frameRate: { min: 24 } },
+            { height: { min: 360 } },
+            { width: { min: 640 } },
+            { frameRate: { max: 24 } },
+            { width: { max: 640 } },
+            { height: { max: 360 } },
+            { aspectRatio: { exact: 1.77778 } },
+          ],
+        }
+      : false,
+  };
+
   const tryCall = (opponent) => {
     setCallState(STATE_CALLING);
 
     videoCallHandlerRef.current.createOffer({
-      media: {},
+      media: mediaConstraints,
       success: (offerDescriptor) => {
         videoCallHandlerRef.current.send({
           message: { request: 'call', username: opponent },
@@ -47,7 +81,7 @@ export default function GlobalProvider({ children }) {
 
     videoCallHandlerRef.current.createAnswer({
       jsep: sessionDescriptorRef.current,
-      media: {},
+      media: mediaConstraints,
       success: (answerDescriptor) => {
         videoCallHandlerRef.current.send({
           message: { request: 'accept' },
