@@ -19,7 +19,7 @@ export default function App() {
       <header>
         <h1>Millennium Eye</h1>
       </header>
-      <JoinView />
+      <AppView />
     </GlobalProvider>
   );
 }
@@ -36,6 +36,56 @@ function CallStatusIndicator() {
       )}
       <strong>Status:</strong> {callState}
     </span>
+  );
+}
+
+function AppView() {
+  const { callState } = useContext(GlobalContext);
+
+  const mustShowCallView = [STATE_CALLING, STATE_RINGING, STATE_ANSWERING, STATE_IN_CALL].includes(
+    callState
+  );
+  return mustShowCallView ? <CallView /> : <JoinView />;
+}
+
+function CallView() {
+  const { callState, hangup, acceptIncomingCall } = useContext(GlobalContext);
+
+  const isRinging = callState === STATE_RINGING;
+
+  if (isRinging) {
+    return (
+      <main className="call-view">
+        <section className="action-bar">
+          <CallStatusIndicator />
+          <div>
+            <button type="button" onClick={acceptIncomingCall}>
+              Accept call
+            </button>
+            <button type="button" onClick={hangup}>
+              Hangup
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="call-view">
+      <section className="localstream-area">
+        <video id="local-video" width={400} autoPlay playsInline />
+      </section>
+      <section className="action-bar">
+        <CallStatusIndicator />
+        <button type="button" onClick={hangup}>
+          Hangup
+        </button>
+      </section>
+      <section className="remotestream-area">
+        <video id="remote-video" width={400} autoPlay playsInline />
+      </section>
+    </main>
   );
 }
 
@@ -69,16 +119,8 @@ function JoinView() {
       });
   }, []);
 
-  const {
-    callState,
-    setDevices,
-    setUsername,
-    setOpponent,
-    registerUsername,
-    tryCall,
-    acceptIncomingCall,
-    hangup,
-  } = useContext(GlobalContext);
+  const { callState, setDevices, setUsername, setOpponent, registerUsername, tryCall } =
+    useContext(GlobalContext);
 
   const handleRegisterSubmit = (event) => {
     event.preventDefault();
@@ -120,39 +162,6 @@ function JoinView() {
         <p>
           <em>Loading devices...</em>
         </p>
-      </main>
-    );
-  }
-
-  const mustShowCallControls = [
-    STATE_CALLING,
-    STATE_RINGING,
-    STATE_ANSWERING,
-    STATE_IN_CALL,
-  ].includes(callState);
-
-  if (mustShowCallControls) {
-    return (
-      <main className="call-view">
-        <section className="localstream-area">
-          <video id="local-video" width={400} autoPlay playsInline />
-        </section>
-        <section className="action-bar">
-          <CallStatusIndicator />
-          <div>
-            {callState === STATE_RINGING && (
-              <button type="button" onClick={acceptIncomingCall}>
-                Accept call
-              </button>
-            )}
-            <button type="button" onClick={hangup}>
-              Hangup
-            </button>
-          </div>
-        </section>
-        <section className="remotestream-area">
-          <video id="remote-video" width={400} autoPlay playsInline />
-        </section>
       </main>
     );
   }
