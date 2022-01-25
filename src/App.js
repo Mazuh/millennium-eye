@@ -16,19 +16,10 @@ import GlobalProvider, {
 export default function App() {
   return (
     <GlobalProvider>
-      <div>
-        <header>
-          <h1>Millennium Eye</h1>
-        </header>
-        <JoinView />
-        <footer>
-          <p>
-            <small>
-              <CallStatusIndicator />
-            </small>
-          </p>
-        </footer>
-      </div>
+      <header>
+        <h1>Millennium Eye</h1>
+      </header>
+      <JoinView />
     </GlobalProvider>
   );
 }
@@ -140,65 +131,85 @@ function JoinView() {
     STATE_IN_CALL,
   ].includes(callState);
 
-  return (
-    <main>
-      {(callState === STATE_CONNECTED || callState === STATE_REGISTER_FAILED) && (
-        <form onSubmit={handleRegisterSubmit}>
-          <label>
-            My username:
-            <input name="username" autoComplete="off" defaultValue="Marcell" required />
-          </label>
-          <br />
-          <label>
-            Microphone:
-            <select name="microphone" required>
-              {microphones.map((mic) => (
-                <option key={mic.deviceId} value={mic.deviceId}>
-                  {mic.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <br />
-          <label>
-            Camera:
-            <select name="camera" required>
-              {cameras.map((cam) => (
-                <option key={cam.deviceId} value={cam.deviceId}>
-                  {cam.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <br />
-          <button>Register</button>
-        </form>
-      )}
-      {(callState === STATE_REGISTERED || callState === STATE_CALL_FAILED) && (
-        <form onSubmit={handleCallSubmit}>
-          <label>
-            {"Another player's username:"}
-            <input name="opponent" autoComplete="off" defaultValue="Rodrigo" required />
-          </label>
-          <br />
-          <button>Duel!</button>
-        </form>
-      )}
-      {callState === STATE_RINGING && (
-        <button type="button" onClick={acceptIncomingCall}>
-          Accept call
-        </button>
-      )}
-      {mustShowCallControls && (
-        <>
-          <button type="button" onClick={hangup}>
-            Hangup
-          </button>
-          <br />
+  if (mustShowCallControls) {
+    return (
+      <main className="call-view">
+        <section className="localstream-area">
           <video id="local-video" width={400} autoPlay playsInline />
+        </section>
+        <section className="action-bar">
+          <CallStatusIndicator />
+          <div>
+            {callState === STATE_RINGING && (
+              <button type="button" onClick={acceptIncomingCall}>
+                Accept call
+              </button>
+            )}
+            <button type="button" onClick={hangup}>
+              Hangup
+            </button>
+          </div>
+        </section>
+        <section className="remotestream-area">
           <video id="remote-video" width={400} autoPlay playsInline />
-        </>
-      )}
-    </main>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <>
+      <main>
+        {(callState === STATE_CONNECTED || callState === STATE_REGISTER_FAILED) && (
+          <form onSubmit={handleRegisterSubmit}>
+            <label>
+              My username:
+              <input name="username" autoComplete="off" defaultValue="Marcell" required />
+            </label>
+            <br />
+            <label>
+              Microphone:
+              <select name="microphone" required>
+                {microphones.map((mic) => (
+                  <option key={mic.deviceId} value={mic.deviceId}>
+                    {mic.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <br />
+            <label>
+              Camera:
+              <select name="camera" required>
+                {cameras.map((cam) => (
+                  <option key={cam.deviceId} value={cam.deviceId}>
+                    {cam.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <br />
+            <button>Register</button>
+          </form>
+        )}
+        {(callState === STATE_REGISTERED || callState === STATE_CALL_FAILED) && (
+          <form onSubmit={handleCallSubmit}>
+            <label>
+              {"Another player's username:"}
+              <input name="opponent" autoComplete="off" defaultValue="Rodrigo" required />
+            </label>
+            <br />
+            <button>Duel!</button>
+          </form>
+        )}
+      </main>
+      <footer>
+        <p>
+          <small>
+            <CallStatusIndicator />
+          </small>
+        </p>
+      </footer>
+    </>
   );
 }
