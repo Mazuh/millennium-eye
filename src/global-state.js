@@ -11,6 +11,7 @@ export const GlobalContext = createContext();
 export default function GlobalProvider({ children }) {
   const [janus, setJanus] = useState(null);
   const [devices, setDevices] = useState({ microphone: null, camera: null });
+  const [fieldDevices, setFieldDevices] = useState({ camera: null });
   const [username, setUsername] = useState('');
   const [opponent, setOpponent] = useState('');
   const [callState, setCallState] = useState(STATE_OFF);
@@ -190,6 +191,8 @@ export default function GlobalProvider({ children }) {
     setJanus,
     devices,
     setDevices,
+    fieldDevices,
+    setFieldDevices,
     username,
     setUsername,
     opponent,
