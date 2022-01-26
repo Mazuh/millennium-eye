@@ -119,8 +119,15 @@ function JoinView() {
       });
   }, []);
 
-  const { callState, setDevices, setUsername, setOpponent, registerUsername, tryCall } =
-    useContext(GlobalContext);
+  const {
+    callState,
+    setDevices,
+    setFieldDevices,
+    setUsername,
+    setOpponent,
+    registerUsername,
+    tryCall,
+  } = useContext(GlobalContext);
 
   const handleRegisterSubmit = (event) => {
     event.preventDefault();
@@ -132,7 +139,11 @@ function JoinView() {
       microphone: microphones.find((m) => m.deviceId === event.target.microphone.value) || null,
       camera: cameras.find((c) => c.deviceId === event.target.camera.value) || null,
     };
+    const fieldDevices = {
+      camera: cameras.find((fc) => fc.deviceId === event.target.fieldCamera.value) || null,
+    };
     setDevices(devices);
+    setFieldDevices(fieldDevices);
 
     registerUsername(username);
   };
@@ -190,6 +201,17 @@ function JoinView() {
             <label>
               Camera:
               <select name="camera" required>
+                {cameras.map((cam) => (
+                  <option key={cam.deviceId} value={cam.deviceId}>
+                    {cam.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <br />
+            <label>
+              Field Camera:
+              <select name="fieldCamera" required>
                 {cameras.map((cam) => (
                   <option key={cam.deviceId} value={cam.deviceId}>
                     {cam.label}
