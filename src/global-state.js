@@ -19,13 +19,24 @@ export default function GlobalProvider({ children }) {
   const [callState, setCallState] = useState(STATE_OFF);
   const [callFieldState, setCallFieldState] = useState(STATE_OFF);
   const videoCallHandlerRef = useRef(null);
+  const videoCallFieldHandlerRef = useRef(null);
   const setVideoCallHandler = (handler) => (videoCallHandlerRef.current = handler);
+  const setVideoCallFieldHandler = (handler) => (videoCallFieldHandlerRef.current = handler);
   const sessionDescriptorRef = useRef(null);
   const setSessionDescriptor = (s) => (sessionDescriptorRef.current = s);
+  const fieldSessionDescriptorRef = useRef(null);
+  const setFieldSessionDescriptor = (s) => (fieldSessionDescriptorRef.current = s);
 
   const registerUsername = (username) => {
     setCallState(STATE_REGISTERING);
     videoCallHandlerRef.current.send({ message: { request: 'register', username } });
+  };
+
+  const registerFieldName = (fieldName) => {
+    setCallFieldState(STATE_REGISTERING);
+    videoCallFieldHandlerRef.current.send({
+      message: { request: 'register', username: fieldName },
+    });
   };
 
   const mediaConstraints = {
@@ -127,6 +138,35 @@ export default function GlobalProvider({ children }) {
     }
   }, []);
 
+  const handleFieldJanusMessage = useCallback((message, incomingSessionDescriptor) => {
+    if (incomingSessionDescriptor) {
+      setFieldSessionDescriptor(incomingSessionDescriptor);
+    }
+
+    const event = get(message, 'result.event');
+    const errorCode = get(message, 'error_code');
+
+    if (event === 'registered') {
+      setCallFieldState(STATE_REGISTERED);
+    } else if (errorCode === JANUS_VIDEOCALL_ERROR_NO_SUCH_USERNAME) {
+      setCallFieldState(STATE_CALL_FAILED);
+    } else if (event === 'incomingcall') {
+      setCallFieldState(STATE_RINGING);
+    } else if (errorCode === JANUS_VIDEOCALL_ERROR_USERNAME_TAKEN) {
+      setCallFieldState(STATE_REGISTER_FAILED);
+    } else if (event === 'accepted') {
+      videoCallFieldHandlerRef.current.handleRemoteJsep({
+        jsep: fieldSessionDescriptorRef.current,
+      });
+    } else {
+      console.warn(
+        'NOT IMPLEMENTED - Field Connection: onmessage',
+        message,
+        incomingSessionDescriptor
+      );
+    }
+  }, []);
+
   useEffect(() => {
     // Janus initialization for face communication
     Janus.init({
@@ -207,6 +247,7 @@ export default function GlobalProvider({ children }) {
               plugin: 'janus.plugin.videocall',
               opaqueId: opaqueId,
               success: (videoCallHandler) => {
+                setVideoCallFieldHandler(videoCallHandler);
                 setCallFieldState(STATE_CONNECTED);
               },
               error: () => {
@@ -218,9 +259,7 @@ export default function GlobalProvider({ children }) {
               webrtcState: (isOn) => {
                 console.warn('NOT IMPLEMENTED - Field Connection: webrtcState');
               },
-              onmessage: (message, incomingSessionDescriptor) => {
-                console.warn('NOT IMPLEMENTED - Field Connection: onmessage');
-              },
+              onmessage: handleFieldJanusMessage,
               onlocalstream: (stream) => {
                 console.warn('NOT IMPLEMENTED - Field Connection: onlocalstream');
               },
@@ -242,7 +281,7 @@ export default function GlobalProvider({ children }) {
         setFieldJanus(janusInstance);
       },
     });
-  }, [handleJanusMessage]);
+  }, [handleJanusMessage, handleFieldJanusMessage]);
 
   const value = {
     janus,
@@ -264,6 +303,7 @@ export default function GlobalProvider({ children }) {
     callState,
     setCallState,
     registerUsername,
+    registerFieldName,
     tryCall,
     acceptIncomingCall,
     hangup,

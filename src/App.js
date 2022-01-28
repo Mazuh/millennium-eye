@@ -142,6 +142,7 @@ function JoinView() {
     setFieldName,
     setOpponent,
     registerUsername,
+    registerFieldName,
     tryCall,
   } = useContext(GlobalContext);
 
@@ -163,6 +164,7 @@ function JoinView() {
     setFieldDevices(fieldDevices);
 
     registerUsername(username);
+    registerFieldName(`${username} - field`);
   };
 
   const handleCallSubmit = (event) => {
@@ -252,11 +254,9 @@ function JoinView() {
         )}
       </main>
       <footer>
-        <p>
-          <small>
-            <CallStatusIndicator />
-          </small>
-        </p>
+        <small>
+          <CallStatusIndicator />
+        </small>
       </footer>
     </>
   );
