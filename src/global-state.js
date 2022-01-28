@@ -13,8 +13,10 @@ export default function GlobalProvider({ children }) {
   const [devices, setDevices] = useState({ microphone: null, camera: null });
   const [fieldDevices, setFieldDevices] = useState({ camera: null });
   const [username, setUsername] = useState('');
+  const [fieldName, setFieldName] = useState('');
   const [opponent, setOpponent] = useState('');
   const [callState, setCallState] = useState(STATE_OFF);
+  const [callFieldState, setCallFieldState] = useState(STATE_OFF);
   const videoCallHandlerRef = useRef(null);
   const setVideoCallHandler = (handler) => (videoCallHandlerRef.current = handler);
   const sessionDescriptorRef = useRef(null);
@@ -195,6 +197,10 @@ export default function GlobalProvider({ children }) {
     setFieldDevices,
     username,
     setUsername,
+    fieldName,
+    setFieldName,
+    callFieldState,
+    setCallFieldState,
     opponent,
     setOpponent,
     callState,

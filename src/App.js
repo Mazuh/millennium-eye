@@ -25,17 +25,32 @@ export default function App() {
 }
 
 function CallStatusIndicator() {
-  const { username, callState } = useContext(GlobalContext);
+  const { username, fieldName, callState, callFieldState } = useContext(GlobalContext);
   return (
-    <span>
-      {!!username && (
-        <>
-          <strong>Username:</strong> {username}
-          <br />
-        </>
-      )}
-      <strong>Status:</strong> {callState}
-    </span>
+    <div className="status-indicator__container">
+      <span className="status-indicator__item">
+        <strong>Field connection</strong>
+        <br />
+        {!!fieldName && (
+          <>
+            <strong>Username:</strong> {fieldName}
+            <br />
+          </>
+        )}
+        <strong>Status:</strong> {callFieldState}
+      </span>
+      <span className="status-indicator__item">
+        <strong>Face connection</strong>
+        <br />
+        {!!username && (
+          <>
+            <strong>Username:</strong> {username}
+            <br />
+          </>
+        )}
+        <strong>Status:</strong> {callState}
+      </span>
+    </div>
   );
 }
 
