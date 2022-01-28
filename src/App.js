@@ -139,6 +139,7 @@ function JoinView() {
     setDevices,
     setFieldDevices,
     setUsername,
+    setFieldName,
     setOpponent,
     registerUsername,
     tryCall,
@@ -149,6 +150,7 @@ function JoinView() {
 
     const username = event.target.username.value.trim();
     setUsername(username);
+    setFieldName(`${username} - field`);
 
     const devices = {
       microphone: microphones.find((m) => m.deviceId === event.target.microphone.value) || null,

@@ -10,6 +10,7 @@ export const GlobalContext = createContext();
 
 export default function GlobalProvider({ children }) {
   const [janus, setJanus] = useState(null);
+  const [fieldJanus, setFieldJanus] = useState(null);
   const [devices, setDevices] = useState({ microphone: null, camera: null });
   const [fieldDevices, setFieldDevices] = useState({ camera: null });
   const [username, setUsername] = useState('');
@@ -127,6 +128,7 @@ export default function GlobalProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    // Janus initialization for face communication
     Janus.init({
       debug: true,
       callback: () => {
@@ -186,11 +188,67 @@ export default function GlobalProvider({ children }) {
         setJanus(janusInstance);
       },
     });
+
+    // Janus initialization for field communication
+    Janus.init({
+      debug: true,
+      callback: () => {
+        setCallFieldState(STATE_CONNECTING);
+
+        const janusInstance = new Janus({
+          server: 'http://localhost:8088/janus',
+          iceServers: [
+            {
+              urls: 'stun:stun.l.google.com:19302',
+            },
+          ],
+          success: () => {
+            janusInstance.attach({
+              plugin: 'janus.plugin.videocall',
+              opaqueId: opaqueId,
+              success: (videoCallHandler) => {
+                setCallFieldState(STATE_CONNECTED);
+              },
+              error: () => {
+                console.warn('NOT IMPLEMENTED - Field Connection: consentDialog');
+              },
+              consentDialog: () => {
+                console.warn('NOT IMPLEMENTED - Field Connection: consentDialog');
+              },
+              webrtcState: (isOn) => {
+                console.warn('NOT IMPLEMENTED - Field Connection: webrtcState');
+              },
+              onmessage: (message, incomingSessionDescriptor) => {
+                console.warn('NOT IMPLEMENTED - Field Connection: onmessage');
+              },
+              onlocalstream: (stream) => {
+                console.warn('NOT IMPLEMENTED - Field Connection: onlocalstream');
+              },
+              onremotestream: (stream) => {
+                console.warn('NOT IMPLEMENTED - Field Connection: onremotestream');
+              },
+              oncleanup: () => {
+                console.warn('NOT IMPLEMENTED - Field Connection: oncleanup');
+              },
+            });
+          },
+          error: () => {
+            setCallFieldState(STATE_CONNECTION_FAILED);
+          },
+          destroyed: () => {
+            setCallFieldState(STATE_DISCONNECTED);
+          },
+        });
+        setFieldJanus(janusInstance);
+      },
+    });
   }, [handleJanusMessage]);
 
   const value = {
     janus,
     setJanus,
+    fieldJanus,
+    setFieldJanus,
     devices,
     setDevices,
     fieldDevices,
