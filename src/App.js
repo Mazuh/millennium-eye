@@ -90,6 +90,7 @@ function CallView() {
     <main className="call-view">
       <section className="localstream-area">
         <video id="local-video" width={400} autoPlay playsInline />
+        <video id="local-field-video" width={400} autoPlay playsInline />
       </section>
       <section className="action-bar">
         <CallStatusIndicator />
@@ -99,6 +100,7 @@ function CallView() {
       </section>
       <section className="remotestream-area">
         <video id="remote-video" width={400} autoPlay playsInline />
+        <video id="remote-field-video" width={400} autoPlay playsInline />
       </section>
     </main>
   );

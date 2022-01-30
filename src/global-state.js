@@ -73,8 +73,29 @@ export default function GlobalProvider({ children }) {
       : false,
   };
 
+  const fieldMediaConstraints = {
+    audio: false,
+    video: fieldDevices.camera
+      ? {
+          deviceId: {
+            exact: fieldDevices.camera.deviceId,
+          },
+          advanced: [
+            { frameRate: { min: 24 } },
+            { height: { min: 360 } },
+            { width: { min: 640 } },
+            { frameRate: { max: 24 } },
+            { width: { max: 640 } },
+            { height: { max: 360 } },
+            { aspectRatio: { exact: 1.77778 } },
+          ],
+        }
+      : false,
+  };
+
   const tryCall = (opponent) => {
     setCallState(STATE_CALLING);
+    setCallFieldState(STATE_CALLING);
 
     videoCallHandlerRef.current.createOffer({
       media: mediaConstraints,
@@ -87,6 +108,20 @@ export default function GlobalProvider({ children }) {
       error: (error) => {
         console.error('Create offer error', error);
         setCallState(STATE_CALL_FAILED);
+      },
+    });
+
+    videoCallFieldHandlerRef.current.createOffer({
+      media: fieldMediaConstraints,
+      success: (offerDescriptor) => {
+        videoCallFieldHandlerRef.current.send({
+          message: { request: 'call', username: `${opponent} - field` },
+          jsep: offerDescriptor,
+        });
+      },
+      error: (error) => {
+        console.error('Create offer error', error);
+        setCallFieldState(STATE_CALL_FAILED);
       },
     });
   };
@@ -108,11 +143,28 @@ export default function GlobalProvider({ children }) {
         setCallState(STATE_CALL_FAILED);
       },
     });
+
+    videoCallFieldHandlerRef.current.createAnswer({
+      jsep: fieldSessionDescriptorRef.current,
+      media: fieldMediaConstraints,
+      success: (answerDescriptor) => {
+        videoCallFieldHandlerRef.current.send({
+          message: { request: 'accept' },
+          jsep: answerDescriptor,
+        });
+      },
+      error: (error) => {
+        console.error('Create answer error', error);
+        setCallFieldState(STATE_CALL_FAILED);
+      },
+    });
   };
 
   const hangup = () => {
     videoCallHandlerRef.current.send({ message: { request: 'hangup' } });
+    videoCallFieldHandlerRef.current.send({ message: { request: 'hangup' } });
     videoCallHandlerRef.current.hangup();
+    videoCallFieldHandlerRef.current.hangup();
   };
 
   const handleJanusMessage = useCallback((message, incomingSessionDescriptor) => {
@@ -251,23 +303,31 @@ export default function GlobalProvider({ children }) {
                 setCallFieldState(STATE_CONNECTED);
               },
               error: () => {
-                console.warn('NOT IMPLEMENTED - Field Connection: consentDialog');
+                setCallFieldState(STATE_CONNECTION_FAILED);
               },
               consentDialog: () => {
                 console.warn('NOT IMPLEMENTED - Field Connection: consentDialog');
               },
               webrtcState: (isOn) => {
-                console.warn('NOT IMPLEMENTED - Field Connection: webrtcState');
+                if (isOn) {
+                  setCallFieldState(STATE_IN_CALL);
+                } else {
+                  setCallFieldState(STATE_CALL_HUNGUP);
+                }
               },
               onmessage: handleFieldJanusMessage,
               onlocalstream: (stream) => {
-                console.warn('NOT IMPLEMENTED - Field Connection: onlocalstream');
+                const video = document.querySelector('#local-field-video');
+                Janus.attachMediaStream(video, stream);
+                video.muted = 'muted';
               },
               onremotestream: (stream) => {
-                console.warn('NOT IMPLEMENTED - Field Connection: onremotestream');
+                const video = document.querySelector('#remote-field-video');
+                Janus.attachMediaStream(video, stream);
+                video.muted = 'muted';
               },
               oncleanup: () => {
-                console.warn('NOT IMPLEMENTED - Field Connection: oncleanup');
+                setCallFieldState(STATE_REGISTERED);
               },
             });
           },
