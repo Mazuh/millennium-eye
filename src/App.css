@@ -25,6 +25,14 @@ body {
   margin: 10px 0;
 }
 
+.status-indicator__container {
+  display: flex;
+}
+
+.status-indicator__item {
+  margin-right: 10px;
+}
+
 @media screen and (min-width: 48em) {
   .localstream-area {
     justify-content: flex-start;
