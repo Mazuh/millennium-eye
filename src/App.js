@@ -88,19 +88,19 @@ function CallView() {
 
   return (
     <main className="call-view">
-      <section className="localstream-area">
-        <video id="local-video" width={400} autoPlay playsInline />
-        <video id="local-field-video" width={400} autoPlay playsInline />
+      <section className="face-area">
+        <video className="local-video" id="local-video" width={300} autoPlay playsInline />
+        <div className="call-action-bar">
+          <CallStatusIndicator />
+          <button type="button" onClick={hangup}>
+            Hangup
+          </button>
+        </div>
+        <video className="remote-video" id="remote-video" width={300} autoPlay playsInline />
       </section>
-      <section className="action-bar">
-        <CallStatusIndicator />
-        <button type="button" onClick={hangup}>
-          Hangup
-        </button>
-      </section>
-      <section className="remotestream-area">
-        <video id="remote-video" width={400} autoPlay playsInline />
-        <video id="remote-field-video" width={400} autoPlay playsInline />
+      <section className="field-area">
+        <video className="local-field-video" id="local-field-video" autoPlay playsInline />
+        <video className="remote-field-video" id="remote-field-video" autoPlay playsInline />
       </section>
     </main>
   );
