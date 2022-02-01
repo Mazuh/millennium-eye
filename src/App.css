@@ -8,13 +8,18 @@ body {
 
 .face-area {
   display: flex;
+  flex-direction: column;
+}
+
+.face-section {
+  display: flex;
   justify-content: center;
   flex-direction: column;
   flex-grow: 0.3;
   padding: 0 10px 0 0;
 }
 
-.field-area {
+.field-section {
   display: flex;
   flex-grow: 1;
   flex-direction: column;
@@ -41,8 +46,11 @@ body {
 .call-action-bar {
   display: flex;
   flex-direction: column;
-  margin: 10px 0;
-  width: 300px;
+  padding-left: 10px;
+}
+
+.hangup-button {
+  margin-top: 10px;
 }
 
 .status-indicator__container {
