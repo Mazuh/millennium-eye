@@ -64,7 +64,7 @@ function AppView() {
 }
 
 function CallView() {
-  const { callState, hangup, acceptIncomingCall } = useContext(GlobalContext);
+  const { username, opponent, callState, hangup, acceptIncomingCall } = useContext(GlobalContext);
 
   const isRinging = callState === STATE_RINGING;
 
@@ -88,19 +88,25 @@ function CallView() {
 
   return (
     <main className="call-view">
-      <section className="localstream-area">
-        <video id="local-video" width={400} autoPlay playsInline />
-        <video id="local-field-video" width={400} autoPlay playsInline />
+      <section className="face-section">
+        <div className="face-area">
+          <h3>{username}</h3>
+          <video className="local-video" id="local-video" autoPlay playsInline />
+        </div>
+        <div className="face-area">
+          <h3>{opponent}</h3>
+          <video className="remote-video" id="remote-video" autoPlay playsInline />
+        </div>
       </section>
-      <section className="action-bar">
+      <section className="field-section">
+        <video className="local-field-video" id="local-field-video" autoPlay playsInline />
+        <video className="remote-field-video" id="remote-field-video" autoPlay playsInline />
+      </section>
+      <section className="call-action-bar">
         <CallStatusIndicator />
-        <button type="button" onClick={hangup}>
+        <button className="hangup-button" type="button" onClick={hangup}>
           Hangup
         </button>
-      </section>
-      <section className="remotestream-area">
-        <video id="remote-video" width={400} autoPlay playsInline />
-        <video id="remote-field-video" width={400} autoPlay playsInline />
       </section>
     </main>
   );

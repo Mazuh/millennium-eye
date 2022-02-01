@@ -165,6 +165,7 @@ export default function GlobalProvider({ children }) {
     videoCallFieldHandlerRef.current.send({ message: { request: 'hangup' } });
     videoCallHandlerRef.current.hangup();
     videoCallFieldHandlerRef.current.hangup();
+    setOpponent('');
   };
 
   const handleJanusMessage = useCallback((message, incomingSessionDescriptor) => {
@@ -181,6 +182,7 @@ export default function GlobalProvider({ children }) {
       setCallState(STATE_CALL_FAILED);
     } else if (event === 'incomingcall') {
       setCallState(STATE_RINGING);
+      setOpponent(get(message, 'result.username', ''));
     } else if (errorCode === JANUS_VIDEOCALL_ERROR_USERNAME_TAKEN) {
       setCallState(STATE_REGISTER_FAILED);
     } else if (event === 'accepted') {
