@@ -104,8 +104,11 @@ function CallView() {
         <video className="remote-field-video" id="remote-field-video" autoPlay playsInline />
       </section>
       <section className="call-action-bar">
-        <CallStatusIndicator />
-        <CardDetails />
+        <div>
+          <CallStatusIndicator />
+          <br />
+          <CardDetails />
+        </div>
         <button className="hangup-button" type="button" onClick={hangup}>
           Hangup
         </button>

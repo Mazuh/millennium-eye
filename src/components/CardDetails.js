@@ -8,7 +8,7 @@ export default function CardDetails() {
     event.preventDefault();
 
     const name = event.target.cardName.value || '';
-    fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${name}`)
+    fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${name}&language=pt`)
       .then((response) => response.json())
       .then((data) => setCardData(get(data, 'data.0', {})))
       .catch((error) => console.warn(error));
@@ -21,7 +21,10 @@ export default function CardDetails() {
         <button type="submit">Pesquisar</button>
       </form>
       {cardData.name && (
-        <img src={get(cardData, 'card_images.0.image_url', '')} alt={cardData.name} />
+        <>
+          <br />
+          <img src={get(cardData, 'card_images.0.image_url', '')} alt={cardData.name} />
+        </>
       )}
     </>
   );
