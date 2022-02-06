@@ -12,7 +12,7 @@ import GlobalProvider, {
   STATE_REGISTER_FAILED,
   STATE_RINGING,
 } from './global-state';
-import CardDetails from './components/CardDetails';
+import CardDetailsView from './components/CardDetailsView';
 
 export default function App() {
   return (
@@ -107,7 +107,7 @@ function CallView() {
         <div>
           <CallStatusIndicator />
           <br />
-          <CardDetails />
+          <CardDetailsView />
         </div>
         <button className="hangup-button" type="button" onClick={hangup}>
           Hangup
