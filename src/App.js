@@ -12,6 +12,7 @@ import GlobalProvider, {
   STATE_REGISTER_FAILED,
   STATE_RINGING,
 } from './global-state';
+import CardDetailsView from './components/CardDetailsView';
 
 export default function App() {
   return (
@@ -103,7 +104,11 @@ function CallView() {
         <video className="remote-field-video" id="remote-field-video" autoPlay playsInline />
       </section>
       <section className="call-action-bar">
-        <CallStatusIndicator />
+        <div>
+          <CallStatusIndicator />
+          <br />
+          <CardDetailsView />
+        </div>
         <button className="hangup-button" type="button" onClick={hangup}>
           Hangup
         </button>
