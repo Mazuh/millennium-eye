@@ -1,19 +1,30 @@
 import { useState } from 'react';
 import get from 'lodash.get';
-import { Tabs, Tab } from 'react-bootstrap';
+import { Tabs, Tab, Spinner } from 'react-bootstrap';
 
 export default function CardDetails() {
   const [cardData, setCardData] = useState({});
   const [selectedTab, setSelectedTab] = useState('image');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   const retrieveCardDetails = (event) => {
     event.preventDefault();
 
     const name = event.target.cardName.value || '';
+    setIsError(false);
+    setIsLoading(true);
     fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?name=${name}&language=pt`)
       .then((response) => response.json())
-      .then((data) => setCardData(get(data, 'data.0', {})))
-      .catch((error) => console.warn(error));
+      .then((data) => {
+        setCardData(get(data, 'data.0', {}));
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        setIsLoading(false);
+        setIsError(true);
+        console.warn(error);
+      });
   };
 
   return (
@@ -22,7 +33,17 @@ export default function CardDetails() {
         <input name="cardName" />
         <button type="submit">Pesquisar</button>
       </form>
-      {cardData.name && (
+      {isError && !isLoading && (
+        <div className="d-flex justify-content-center w-100 m-2">
+          <span>Erro ao carregar os dados.</span>
+        </div>
+      )}
+      {isLoading && !isError && (
+        <div className="d-flex justify-content-center w-100 m-2">
+          <Spinner animation="border" variant="dark" />
+        </div>
+      )}
+      {cardData.name && !isLoading && !isError && (
         <Tabs
           className="m-1"
           id="card-details"
